@@ -236,3 +236,30 @@ After these changes, `npm run build` completes and correctly emits
 - Adapter and Svelte `compilerOptions` belong in `svelte.config.js`, **not** in `sveltekit()`.
 - `@sveltejs/adapter-cloudflare` requires **both** `assets.directory` and `assets.binding` in
   `wrangler.jsonc` before it will emit output.
+
+---
+
+## Current Gaps (TODO)
+
+Known gaps as of 2026-07-11. The build works; these are the items still outstanding:
+
+- [ ] **`database_id` is a placeholder** — `wrangler.jsonc` still has `"<staging-database-id>"`.
+      Deploy will fail until the real ID from `wrangler d1 create` is filled in
+      (local dev is unaffected).
+- [ ] **No generated binding types** — run `npx wrangler types` and add a
+      `"cf-typegen": "wrangler types"` script so `DB`/`ASSETS` bindings are typed.
+- [ ] **`App.Platform` is untyped** — `src/app.d.ts` has the `Platform` interface commented
+      out; server code using `event.platform.env.DB` won't type-check until it's filled in
+      (e.g. `interface Platform { env: { DB: D1Database; ASSETS: Fetcher } }`).
+- [ ] **No `deploy` script** — add `"deploy": "npm run build && wrangler deploy"` to
+      `package.json` to avoid deploying a stale build.
+- [ ] **`.dev.vars` not git-ignored** — `.gitignore` covers `.env*` but not `.dev.vars*`,
+      which is the file Wrangler reads for local secrets. No `.dev.vars.example` is committed
+      to document expected values, either.
+- [ ] **No staging/production environments** — the DB name says "staging" but there is no
+      `env.staging` / `env.production` split in `wrangler.jsonc`.
+- [ ] **No cron/scheduled handler** — despite the "poller" name, `adapter-cloudflare` emits a
+      fetch-only Worker; there is no `triggers.crons` config or `scheduled` handler. Scheduled
+      polling needs a separate standalone Worker (or another approach) if that's the intent.
+- [ ] **No tests or lint/format config** — the previous `scriptoriapoller` project had vitest
+      (`@cloudflare/vitest-pool-workers`) and `.prettierrc`; neither has been carried over.

@@ -27,16 +27,18 @@ enum PackageNameKind {
   IANA
 }
 
-/// Application authorization data keyed by the identity issued by Firebase.
-/// Firebase remains responsible for authentication; D1 stores application roles.
+/// Application user and authorization data. Identity is app-native (no
+/// external identity provider); D1 stores the account, its role, and, when
+/// server-managed credentials are used, a password hash set by the app.
 model AppUser {
-  firebaseUid String   @id @map("firebase_uid")
-  email       String?  @unique
-  displayName String?  @map("display_name")
-  role        UserRole @default(USER)
-  disabled    Boolean  @default(false)
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id           String   @id @default(cuid())
+  email        String   @unique
+  displayName  String?  @map("display_name")
+  passwordHash String?  @map("password_hash")
+  role         UserRole @default(USER)
+  disabled     Boolean  @default(false)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   reviewedPackages Package[]            @relation("PackageReviewer")
   statusEvents     PackageStatusEvent[] @relation("StatusEventActor")
@@ -69,13 +71,13 @@ model Package {
   status              PackageStatus @default(PENDING)
   rejectionReason     String?       @map("rejection_reason")
   reviewedAt          DateTime?     @map("reviewed_at")
-  reviewedByUid       String?       @map("reviewed_by_uid")
+  reviewedById        String?       @map("reviewed_by_id")
   lastNotificationAt  DateTime      @default(now()) @map("last_notification_at")
   rawNotificationJson String?       @map("raw_notification_json")
   createdAt           DateTime      @default(now()) @map("created_at")
   updatedAt           DateTime      @updatedAt @map("updated_at")
 
-  reviewer     AppUser?             @relation("PackageReviewer", fields: [reviewedByUid], references: [firebaseUid], onDelete: SetNull)
+  reviewer     AppUser?             @relation("PackageReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
   names        PackageName[]
   listings     PackageListing[]
   images       PackageImage[]
@@ -138,14 +140,14 @@ model PackageStatusEvent {
   packageId  String         @map("package_id")
   fromStatus PackageStatus? @map("from_status")
   toStatus   PackageStatus  @map("to_status")
-  actorUid   String?        @map("actor_uid")
+  actorId    String?        @map("actor_id")
   reason     String?
   createdAt  DateTime       @default(now()) @map("created_at")
 
   package Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  actor   AppUser? @relation("StatusEventActor", fields: [actorUid], references: [firebaseUid], onDelete: SetNull)
+  actor   AppUser? @relation("StatusEventActor", fields: [actorId], references: [id], onDelete: SetNull)
 
   @@index([packageId, createdAt])
-  @@index([actorUid])
+  @@index([actorId])
   @@map("package_status_events")
 }

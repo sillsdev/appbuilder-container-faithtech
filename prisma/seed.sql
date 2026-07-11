@@ -2,17 +2,19 @@ PRAGMA foreign_keys = ON;
 
 -- Representative data for the notification -> pending -> approval demo path.
 INSERT OR IGNORE INTO "app_users" (
-  "firebase_uid",
+  "id",
   "email",
   "display_name",
+  "password_hash",
   "role",
   "disabled",
   "created_at",
   "updated_at"
 ) VALUES (
-  'firebase-demo-admin',
+  'usr-demo-admin',
   'admin@example.invalid',
   'Demo Administrator',
+  NULL,
   'ADMINISTRATOR',
   0,
   '2026-07-11T00:00:00.000Z',
@@ -123,7 +125,7 @@ INSERT OR IGNORE INTO "package_images" (
   );
 
 INSERT OR IGNORE INTO "package_status_events" (
-  "id", "package_id", "from_status", "to_status", "actor_uid", "reason", "created_at"
+  "id", "package_id", "from_status", "to_status", "actor_id", "reason", "created_at"
 ) VALUES (
   'status-gumawana-pending',
   'pkg-gumawana',

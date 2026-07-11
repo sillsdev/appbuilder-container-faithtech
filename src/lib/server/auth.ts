@@ -105,6 +105,15 @@ async function verifyPassword(
   return subtle.timingSafeEqual(derived, expected);
 }
 
+// Decoy hash verified when no account exists, so authentication performs the
+// same PBKDF2 work whether or not the email is registered — defeating user
+// enumeration by response timing. It MUST use the real iteration count (via
+// PBKDF2_ITERATIONS) so the decoy path takes the same time as a genuine
+// verification. The all-zero salt/digest cannot match any password, and this
+// hash never grants access: the `!admin` check below fails the login anyway.
+const DUMMY_PASSWORD_HASH =
+  `pbkdf2$${PBKDF2_ITERATIONS}$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=`;
+
 /**
  * Verify an administrator's email and password. Runs a hash even when the
  * account is missing or disabled so authentication timing does not reveal
@@ -119,8 +128,7 @@ export async function authenticateAdministrator(
     where: { email: email.trim().toLowerCase() },
     select: { id: true, passwordHash: true, disabled: true },
   });
-  const storedHash =
-    admin?.passwordHash ?? "pbkdf2$1$AAAAAAAAAAAAAAAAAAAAAA==$AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=";
+  const storedHash = admin?.passwordHash ?? DUMMY_PASSWORD_HASH;
   const ok = await verifyPassword(password, storedHash);
   if (!admin || admin.disabled || !ok) {
     throw new AuthenticationError("Invalid email or password");

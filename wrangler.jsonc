@@ -1,0 +1,67 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "glocal-packages-api",
+  "main": ".svelte-kit/cloudflare/_worker.js",
+  "compatibility_date": "2026-07-11",
+  "compatibility_flags": ["nodejs_compat"],
+  // Upload source maps so deployed-Worker stack traces point at .ts source.
+  "upload_source_maps": true,
+  "assets": {
+    "binding": "ASSETS",
+    "directory": ".svelte-kit/cloudflare"
+  },
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "head_sampling_rate": 1
+    },
+    "traces": {
+      "enabled": true,
+      "head_sampling_rate": 0.05
+    }
+  },
+  "vars": {
+    "ENVIRONMENT": "local",
+    "ALLOWED_ORIGIN": "http://localhost:5173"
+  },
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "glocal-packages-local",
+      "database_id": "00000000-0000-0000-0000-000000000000",
+      "migrations_dir": "migrations"
+    }
+  ],
+  "env": {
+    "staging": {
+      "name": "glocal-packages-api-staging",
+      "vars": {
+        "ENVIRONMENT": "staging",
+        "ALLOWED_ORIGIN": "https://replace-with-staging-web-origin.example"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "glocal-packages-staging",
+          "database_id": "00000000-0000-0000-0000-000000000000",
+          "migrations_dir": "migrations"
+        }
+      ]
+    },
+    "production": {
+      "name": "glocal-packages-api-production",
+      "vars": {
+        "ENVIRONMENT": "production",
+        "ALLOWED_ORIGIN": "https://replace-with-production-web-origin.example"
+      },
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "glocal-packages-production",
+          "database_id": "00000000-0000-0000-0000-000000000000",
+          "migrations_dir": "migrations"
+        }
+      ]
+    }
+  }
+}

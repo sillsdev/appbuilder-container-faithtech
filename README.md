@@ -13,8 +13,10 @@ representative data, and Prisma tooling needed to validate them.
 - Cloudflare D1 is the hackathon database.
 - The future Worker binding will be named `DB`.
 - The staging database will be named `glocal-packages-staging`.
-- Firebase authenticates people; D1 stores the application role mapped to the
-  Firebase UID.
+- Public package consumers do not sign in. Only administrators have application
+  accounts, using app-managed credentials.
+- Every administrator requires a password hash. The development seed contains
+  an intentionally unusable placeholder until the bootstrap flow is built.
 - The Scriptoria product UUID is the external idempotency key.
 - Every newly received package begins in `PENDING` status. The notification
   payload is never allowed to choose its own moderation status.
@@ -26,8 +28,8 @@ representative data, and Prisma tooling needed to validate them.
 
 ```mermaid
 erDiagram
-    APP_USERS ||--o{ PACKAGES : reviews
-    APP_USERS ||--o{ PACKAGE_STATUS_EVENTS : performs
+    ADMINISTRATORS ||--o{ PACKAGES : reviews
+    ADMINISTRATORS ||--o{ PACKAGE_STATUS_EVENTS : performs
     PACKAGES ||--o{ PACKAGE_NAMES : has
     PACKAGES ||--o{ PACKAGE_LISTINGS : has
     PACKAGES ||--o{ PACKAGE_IMAGES : has
@@ -40,7 +42,7 @@ The minimum models are:
 - `PackageName`: searchable primary and alternative language names.
 - `PackageListing`: localized public title and descriptions.
 - `PackageImage`: resolved image URLs for each scale.
-- `AppUser`: Firebase identity to application-role mapping.
+- `Administrator`: app-native account for package review and management.
 - `PackageStatusEvent`: append-only moderation history.
 
 The full notification can optionally be retained as `rawNotificationJson`, but

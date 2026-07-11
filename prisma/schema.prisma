@@ -15,11 +15,6 @@ enum PackageStatus {
   INACTIVE
 }
 
-enum UserRole {
-  USER
-  ADMINISTRATOR
-}
-
 enum PackageNameKind {
   PRIMARY
   LOCAL
@@ -27,15 +22,13 @@ enum PackageNameKind {
   IANA
 }
 
-/// Application user and authorization data. Identity is app-native (no
-/// external identity provider); D1 stores the account, its role, and, when
-/// server-managed credentials are used, a password hash set by the app.
-model AppUser {
+/// Administrators are the only people with application accounts. Public
+/// package consumers do not sign in and have no database user record.
+model Administrator {
   id           String   @id @default(cuid())
   email        String   @unique
   displayName  String?  @map("display_name")
-  passwordHash String?  @map("password_hash")
-  role         UserRole @default(USER)
+  passwordHash String   @map("password_hash")
   disabled     Boolean  @default(false)
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
@@ -43,7 +36,7 @@ model AppUser {
   reviewedPackages Package[]            @relation("PackageReviewer")
   statusEvents     PackageStatusEvent[] @relation("StatusEventActor")
 
-  @@map("app_users")
+  @@map("administrators")
 }
 
 /// One logical Scriptoria product. Repeated notifications upsert by
@@ -77,7 +70,7 @@ model Package {
   createdAt           DateTime      @default(now()) @map("created_at")
   updatedAt           DateTime      @updatedAt @map("updated_at")
 
-  reviewer     AppUser?             @relation("PackageReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+  reviewer     Administrator?       @relation("PackageReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
   names        PackageName[]
   listings     PackageListing[]
   images       PackageImage[]
@@ -144,8 +137,8 @@ model PackageStatusEvent {
   reason     String?
   createdAt  DateTime       @default(now()) @map("created_at")
 
-  package Package  @relation(fields: [packageId], references: [id], onDelete: Cascade)
-  actor   AppUser? @relation("StatusEventActor", fields: [actorId], references: [id], onDelete: SetNull)
+  package Package        @relation(fields: [packageId], references: [id], onDelete: Cascade)
+  actor   Administrator? @relation("StatusEventActor", fields: [actorId], references: [id], onDelete: SetNull)
 
   @@index([packageId, createdAt])
   @@index([actorId])

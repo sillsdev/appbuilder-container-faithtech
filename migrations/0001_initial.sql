@@ -1,10 +1,9 @@
 -- CreateTable
-CREATE TABLE "app_users" (
+CREATE TABLE "administrators" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "email" TEXT NOT NULL,
     "display_name" TEXT,
-    "password_hash" TEXT,
-    "role" TEXT NOT NULL DEFAULT 'USER',
+    "password_hash" TEXT NOT NULL,
     "disabled" BOOLEAN NOT NULL DEFAULT false,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL
@@ -39,7 +38,7 @@ CREATE TABLE "packages" (
     "raw_notification_json" TEXT,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
-    CONSTRAINT "packages_reviewed_by_id_fkey" FOREIGN KEY ("reviewed_by_id") REFERENCES "app_users" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT "packages_reviewed_by_id_fkey" FOREIGN KEY ("reviewed_by_id") REFERENCES "administrators" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -83,11 +82,11 @@ CREATE TABLE "package_status_events" (
     "reason" TEXT,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "package_status_events_package_id_fkey" FOREIGN KEY ("package_id") REFERENCES "packages" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "package_status_events_actor_id_fkey" FOREIGN KEY ("actor_id") REFERENCES "app_users" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT "package_status_events_actor_id_fkey" FOREIGN KEY ("actor_id") REFERENCES "administrators" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "app_users_email_key" ON "app_users"("email");
+CREATE UNIQUE INDEX "administrators_email_key" ON "administrators"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "packages_scriptoria_product_id_key" ON "packages"("scriptoria_product_id");

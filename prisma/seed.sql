@@ -1,12 +1,13 @@
 PRAGMA foreign_keys = ON;
 
 -- Representative data for the notification -> pending -> approval demo path.
-INSERT OR IGNORE INTO "app_users" (
+-- The password hash is intentionally unusable; replace it through the future
+-- administrator bootstrap flow before testing authentication.
+INSERT OR IGNORE INTO "administrators" (
   "id",
   "email",
   "display_name",
   "password_hash",
-  "role",
   "disabled",
   "created_at",
   "updated_at"
@@ -14,8 +15,7 @@ INSERT OR IGNORE INTO "app_users" (
   'usr-demo-admin',
   'admin@example.invalid',
   'Demo Administrator',
-  NULL,
-  'ADMINISTRATOR',
+  '!development-placeholder-not-a-valid-password-hash!',
   0,
   '2026-07-11T00:00:00.000Z',
   '2026-07-11T00:00:00.000Z'

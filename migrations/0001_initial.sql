@@ -1,8 +1,9 @@
 -- CreateTable
 CREATE TABLE "app_users" (
-    "firebase_uid" TEXT NOT NULL PRIMARY KEY,
-    "email" TEXT,
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "email" TEXT NOT NULL,
     "display_name" TEXT,
+    "password_hash" TEXT,
     "role" TEXT NOT NULL DEFAULT 'USER',
     "disabled" BOOLEAN NOT NULL DEFAULT false,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -33,12 +34,12 @@ CREATE TABLE "packages" (
     "status" TEXT NOT NULL DEFAULT 'PENDING',
     "rejection_reason" TEXT,
     "reviewed_at" DATETIME,
-    "reviewed_by_uid" TEXT,
+    "reviewed_by_id" TEXT,
     "last_notification_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "raw_notification_json" TEXT,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" DATETIME NOT NULL,
-    CONSTRAINT "packages_reviewed_by_uid_fkey" FOREIGN KEY ("reviewed_by_uid") REFERENCES "app_users" ("firebase_uid") ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT "packages_reviewed_by_id_fkey" FOREIGN KEY ("reviewed_by_id") REFERENCES "app_users" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -78,11 +79,11 @@ CREATE TABLE "package_status_events" (
     "package_id" TEXT NOT NULL,
     "from_status" TEXT,
     "to_status" TEXT NOT NULL,
-    "actor_uid" TEXT,
+    "actor_id" TEXT,
     "reason" TEXT,
     "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "package_status_events_package_id_fkey" FOREIGN KEY ("package_id") REFERENCES "packages" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "package_status_events_actor_uid_fkey" FOREIGN KEY ("actor_uid") REFERENCES "app_users" ("firebase_uid") ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT "package_status_events_actor_id_fkey" FOREIGN KEY ("actor_id") REFERENCES "app_users" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateIndex
@@ -122,4 +123,4 @@ CREATE UNIQUE INDEX "package_images_package_id_scale_source_key" ON "package_ima
 CREATE INDEX "package_status_events_package_id_created_at_idx" ON "package_status_events"("package_id", "created_at");
 
 -- CreateIndex
-CREATE INDEX "package_status_events_actor_uid_idx" ON "package_status_events"("actor_uid");
+CREATE INDEX "package_status_events_actor_id_idx" ON "package_status_events"("actor_id");

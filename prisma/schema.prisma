@@ -24,6 +24,8 @@ enum PackageNameKind {
 
 /// Administrators are the only people with application accounts. Public
 /// package consumers do not sign in and have no database user record.
+/// Identity is app-native (no external identity provider); passwordHash is
+/// set through the administrator bootstrap flow.
 model Administrator {
   id           String   @id @default(cuid())
   email        String   @unique

@@ -1,28 +1,41 @@
-# Glocal container database schema
+# Glocal packages Cloudflare MVP
 
-This repository currently contains the database foundation for the Glocal
-container application. The first application milestone will run on Cloudflare
-Workers and use Cloudflare D1, so the Prisma datasource is SQLite-compatible.
+This repository contains the first Cloudflare-hosted vertical slice for the
+Glocal package catalogue. SvelteKit serves the public and administrator pages
+and its server routes run as a Cloudflare Worker backed by D1.
 
-The Cloudflare application scaffold will be added after this schema is agreed.
-Until then, this repository intentionally contains only the schema, migration,
-representative data, and Prisma tooling needed to validate them.
+The MVP flow is:
+
+1. Scriptoria sends a package notification with a shared API credential.
+2. The Worker validates and stores the package as `PENDING`.
+3. An authenticated administrator approves or rejects it.
+4. Only `ACTIVE` packages appear in the public catalogue and API.
+5. The user follows the existing Scriptoria `publishUrl` to download it.
+
+R2 mirroring and notification email are intentionally deferred.
 
 ## Current decisions
 
-- Cloudflare D1 is the hackathon database.
-- The future Worker binding will be named `DB`.
-- The staging database will be named `glocal-packages-staging`.
-- Public package consumers do not sign in. Only administrators have application
-  accounts, using app-managed credentials.
-- Every administrator requires a password hash. The development seed contains
-  an intentionally unusable placeholder until the bootstrap flow is built.
+- Cloudflare D1 is the hackathon database and its Worker binding is `DB`.
+- Public package consumers do not sign in; only administrators have accounts.
+- Administrator credentials are app-managed and stored as password hashes.
 - The Scriptoria product UUID is the external idempotency key.
-- Every newly received package begins in `PENDING` status. The notification
-  payload is never allowed to choose its own moderation status.
-- The public catalogue returns only `ACTIVE` packages.
-- API credentials remain Worker secrets for the MVP and are not stored in this
-  schema yet.
+- New packages always begin as `PENDING`.
+- Repeated notifications update metadata without silently resetting moderation.
+- Scriptoria and session credentials are Worker secrets, not database fields.
+
+## Routes
+
+| Method | Path | Access | Purpose |
+|---|---|---|---|
+| `GET` | `/` | Public | Search and download active packages |
+| `GET` | `/health` | Public | Worker and D1 health |
+| `POST` | `/api/v1/notifications/scriptoria` | Scriptoria secret | Idempotent package ingestion |
+| `GET` | `/api/v1/packages?q=...` | Public | Search active packages |
+| `GET` | `/api/v1/packages/:id` | Public | Active package details |
+| `GET`, `POST` | `/login` | Public | Administrator login page and form action |
+| `GET`, `POST` | `/admin` | Administrator | Review queue and moderation action |
+| `POST` | `/logout` | Administrator | Delete the session cookie |
 
 ## Data model
 
@@ -36,97 +49,127 @@ erDiagram
     PACKAGES ||--o{ PACKAGE_STATUS_EVENTS : records
 ```
 
-The minimum models are:
+The complete notification may be retained as `rawNotificationJson`, but
+business logic uses the normalized columns and relations. Listing descriptions
+are untrusted HTML and must be sanitized before rendering.
 
-- `Package`: one logical Scriptoria product and its current moderation status.
-- `PackageName`: searchable primary and alternative language names.
-- `PackageListing`: localized public title and descriptions.
-- `PackageImage`: resolved image URLs for each scale.
-- `Administrator`: app-native account for package review and management.
-- `PackageStatusEvent`: append-only moderation history.
+## Local setup
 
-The full notification can optionally be retained as `rawNotificationJson`, but
-the application must use the normalized columns and relations for business
-logic. Listing descriptions are untrusted HTML and must be sanitized before
-rendering.
-
-## Install and validate
+Node.js 22 or newer is required.
 
 ```bash
 npm install
-npm run db:check
+cp .dev.vars.example .dev.vars
+npm run db:migrate:local
+npm run db:seed:local
+npm run dev
 ```
 
-Useful individual commands:
+`npm run dev` builds the Cloudflare Worker and starts Wrangler at
+`http://localhost:8787`. The seed package remains `PENDING` to match production
+ingestion policy, so it is intentionally absent from the public API until an
+administrator approves it.
+
+Use development-only values in `.dev.vars`. Never commit real Scriptoria or
+session credentials.
+
+Run the validation suite with:
+
+```bash
+npm run check
+npm run types:check
+npm run deploy:dry-run
+```
+
+## Database and Prisma
+
+- `prisma/schema.prisma` is the application model.
+- `migrations/0001_initial.sql` is the committed D1 migration.
+- `prisma/seed.sql` contains representative local data only.
+- The generated client is placed in `src/lib/server/generated/prisma` and is
+  ignored by Git.
+
+Useful commands:
 
 ```bash
 npm run db:format
 npm run db:validate
 npm run db:generate
+npm run db:migrate:local
+npm run db:seed:local
 ```
 
-The generated Prisma client is ignored by Git and will be created at
-`src/lib/server/generated/prisma`. The future Cloudflare MVP can import it from
-server-only code and construct it with `@prisma/adapter-d1` and `env.DB`.
+Do not rewrite a migration after it has been applied to a shared database. Do
+not run `prisma migrate dev` or `prisma db push` against D1. Generate and review
+SQL, commit it, then apply it with Wrangler.
 
-## Initial migration
+Prisma is used for typed queries. Multi-statement ingestion and moderation
+writes use D1 `batch()` because the Prisma D1 adapter does not provide the
+transaction guarantees required by those operations.
 
-`migrations/0001_initial.sql` is generated from `prisma/schema.prisma` using:
-
-```bash
-npm run db:migration:initial
-```
-
-Do not overwrite a migration after it has been applied to a shared database.
-For later changes, create a new numbered migration and compare the current local
-D1 schema to the updated Prisma schema.
-
-When the Cloudflare MVP adds Wrangler configuration, apply the committed
-migrations locally first:
-
-```bash
-npx wrangler d1 migrations apply glocal-packages-staging --local
-npx wrangler d1 execute glocal-packages-staging --local --file prisma/seed.sql
-```
-
-After local integration succeeds and the SQL has been reviewed, apply it to the
-remote staging database:
-
-```bash
-npx wrangler d1 migrations apply glocal-packages-staging --remote
-```
-
-The seed is representative development data only. Do not apply it to production.
-
-## REST notification mapping
+## Scriptoria notification mapping
 
 | Notification field | Database destination |
 |---|---|
 | Product UUID from `permalink_url` | `Package.scriptoriaProductId` |
-| Project, publish, and permalink fields | `Package` |
+| Project, publish and permalink fields | `Package` |
 | Cleaned `size` | `Package.sizeBytes` |
 | `app_lang` | `Package` and `PackageName` |
 | `listing[]` | `PackageListing` |
 | `image.files[]` | `PackageImage` |
 | Request receipt | `Package.lastNotificationAt` |
 
-The ingestion handler must validate and normalize the notification before
-writing it. In particular, the supplied example's `"11351769}"` size becomes the
+The supplied example's malformed `"11351769}"` size is normalized to the
 integer `11351769`.
 
-## Intentionally deferred
+## Connect Cloudflare staging
 
-The following are not required to close the first notification-to-download
-workflow and should be added through later migrations only when their behavior
-is confirmed:
+The checked-in D1 IDs and allowed origins are placeholders. Authenticate the
+Wrangler CLI and list the account's databases:
+
+```bash
+npx wrangler login
+npx wrangler d1 list
+```
+
+Replace the staging placeholder in `wrangler.jsonc`, then configure secrets
+interactively:
+
+```bash
+npx wrangler secret put SCRIPTORIA_API_KEY --env staging
+npx wrangler secret put SESSION_SECRET --env staging
+```
+
+Apply the migration and deploy:
+
+```bash
+npm run db:migrate:staging
+npm run deploy:staging
+```
+
+The development seed must not be applied to production.
+
+## Administrator bootstrap
+
+The seeded administrator has an intentionally unusable password hash. Before
+testing administrator login, provision a hash in the format produced by the
+Worker's `hashPassword` helper:
+
+```text
+pbkdf2$<iterations>$<saltB64>$<hashB64>
+```
+
+Never store or print the plaintext password.
+
+## Deferred work
 
 - Managed API-credential lifecycle
+- R2 package mirroring
+- Administrator email alerts
 - Interface and branding settings
-- Email delivery history
-- R2 object metadata
-- Multiple package-publication versions
-- General administrative audit events beyond package status changes
+- Multiple publication versions
+- Production migration recovery and backup automation
 
 One product decision remains open: whether a republished `ACTIVE` package stays
-active or returns to `PENDING`. The schema supports either policy; the ingestion
-service must not silently choose it without SIL confirmation.
+active or returns to `PENDING`. The current ingestion implementation preserves
+its existing status until SIL confirms another policy.

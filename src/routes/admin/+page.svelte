@@ -20,9 +20,12 @@
 
 <div class="flex items-center justify-between mb-4">
   <h1 class="text-2xl font-semibold">Package review</h1>
-  <form method="post" action="/logout">
-    <button type="submit" class="btn btn-sm btn-ghost">Sign out</button>
-  </form>
+  <div class="flex items-center gap-2">
+    <a href="/admin/administrators" class="btn btn-sm btn-ghost">Administrators</a>
+    <form method="post" action="/logout">
+      <button type="submit" class="btn btn-sm btn-ghost">Sign out</button>
+    </form>
+  </div>
 </div>
 
 <div role="tablist" class="tabs tabs-boxed mb-4">

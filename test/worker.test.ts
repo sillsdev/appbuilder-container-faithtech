@@ -14,6 +14,13 @@ import {
   scriptoriaNotificationSchema,
 } from "../src/lib/server/notification";
 import { moderatePackage, searchActivePackages } from "../src/lib/server/packages";
+import {
+  createAdministrator,
+  createFirstAdministrator,
+  hasUsableAdministrator,
+  resetAdministratorPassword,
+  setAdministratorDisabled,
+} from "../src/lib/server/administrators";
 
 const notification = {
   project_url: "https://app.scriptoria.io/projects/722",
@@ -214,6 +221,83 @@ describe("moderation", () => {
         administratorId: adminId,
       });
       expect(result).toMatchObject({ ok: false, httpStatus: 409 });
+    } finally {
+      await prisma.$disconnect().catch(() => {});
+    }
+  });
+});
+
+describe("administrator management", () => {
+  it("first-run setup creates the first admin, then closes", async () => {
+    const prisma = createPrisma(env.DB);
+    try {
+      expect(await hasUsableAdministrator(prisma)).toBe(false);
+
+      const first = await createFirstAdministrator(prisma, {
+        email: "owner@example.org",
+        password: "first-admin-pw",
+      });
+      expect(first.ok).toBe(true);
+      expect(await hasUsableAdministrator(prisma)).toBe(true);
+
+      // Setup is closed once a usable admin exists.
+      const second = await createFirstAdministrator(prisma, {
+        email: "sneaky@example.org",
+        password: "another-password",
+      });
+      expect(second).toMatchObject({ ok: false });
+
+      // The created admin can actually authenticate.
+      const id = await authenticateAdministrator(prisma, "owner@example.org", "first-admin-pw");
+      expect(typeof id).toBe("string");
+    } finally {
+      await prisma.$disconnect().catch(() => {});
+    }
+  });
+
+  it("rejects creating a duplicate administrator email", async () => {
+    const prisma = createPrisma(env.DB);
+    try {
+      const ok = await createAdministrator(prisma, { email: "dup@example.org", password: "password-1" });
+      expect(ok.ok).toBe(true);
+      const dup = await createAdministrator(prisma, { email: "dup@example.org", password: "password-2" });
+      expect(dup).toMatchObject({ ok: false });
+    } finally {
+      await prisma.$disconnect().catch(() => {});
+    }
+  });
+
+  it("resets a password so the old one stops working", async () => {
+    const prisma = createPrisma(env.DB);
+    try {
+      const created = await createAdministrator(prisma, { email: "reset@example.org", password: "old-password" });
+      if (!created.ok) throw new Error("setup failed");
+
+      await resetAdministratorPassword(prisma, created.id, "new-password");
+      const id = await authenticateAdministrator(prisma, "reset@example.org", "new-password");
+      expect(id).toBe(created.id);
+      await expect(
+        authenticateAdministrator(prisma, "reset@example.org", "old-password"),
+      ).rejects.toBeInstanceOf(AuthenticationError);
+    } finally {
+      await prisma.$disconnect().catch(() => {});
+    }
+  });
+
+  it("refuses to disable the last active administrator", async () => {
+    const prisma = createPrisma(env.DB);
+    try {
+      const only = await createAdministrator(prisma, { email: "solo@example.org", password: "password-1" });
+      if (!only.ok) throw new Error("setup failed");
+
+      const blocked = await setAdministratorDisabled(prisma, only.id, true);
+      expect(blocked).toMatchObject({ ok: false });
+
+      // With a second admin present, disabling the first is allowed.
+      const second = await createAdministrator(prisma, { email: "backup@example.org", password: "password-2" });
+      if (!second.ok) throw new Error("setup failed");
+      const allowed = await setAdministratorDisabled(prisma, only.id, true);
+      expect(allowed).toMatchObject({ ok: true });
     } finally {
       await prisma.$disconnect().catch(() => {});
     }

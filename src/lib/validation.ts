@@ -14,6 +14,37 @@ export const credentialsSchema = v.object({
   password: v.pipe(v.string(), v.minLength(1), v.maxLength(1_000)),
 });
 
+// A settable administrator password. Minimum length is enforced here (unlike
+// the login credential, which only checks presence) so weak passwords cannot
+// be created through the setup or management UI.
+const administratorPassword = v.pipe(
+  v.string(),
+  v.minLength(8, "Password must be at least 8 characters"),
+  v.maxLength(1_000),
+);
+
+export const newAdministratorSchema = v.object({
+  email: v.pipe(v.string(), v.trim(), v.email(), v.maxLength(320)),
+  displayName: v.optional(
+    v.pipe(v.string(), v.trim(), v.maxLength(200)),
+  ),
+  password: administratorPassword,
+});
+
+export const passwordResetSchema = v.object({
+  id: v.pipe(v.string(), v.minLength(1)),
+  password: administratorPassword,
+});
+
+export const administratorToggleSchema = v.object({
+  id: v.pipe(v.string(), v.minLength(1)),
+  disabled: v.pipe(
+    v.union([v.string(), v.boolean()]),
+    v.transform((value) => value === true || value === "true"),
+    v.boolean(),
+  ),
+});
+
 const reasonSchema = v.optional(
   v.pipe(v.string(), v.trim(), v.minLength(1), v.maxLength(2_000)),
 );

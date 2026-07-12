@@ -11,7 +11,7 @@ schema, migrations, and representative seed data.
 
 All project documentation lives in [`docs/`](./docs).
 
-Guides:
+### Guides
 
 - [`docs/RUNNING.md`](./docs/RUNNING.md) — local development: prerequisites, secrets, database setup, and the route list.
 - [`docs/DEPLOY.md`](./docs/DEPLOY.md) — deploying the Worker to Cloudflare staging and production.

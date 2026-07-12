@@ -5,7 +5,7 @@ agent can pick up without re-deriving everything.
 
 ## Who you're working with
 
-- The user (Emma, GitHub `Emmaloto`) has **no Svelte/SvelteKit experience**,
+- The users has **no Svelte/SvelteKit experience**,
   limited TypeScript and client-side/SSR experience, and no Cloudflare or
   Prisma background. Explain things in plain language, define jargon on first
   use, and prefer complete beginner-friendly answers over terse expert ones.

@@ -16,10 +16,10 @@ All project documentation lives in [`docs/`](./docs).
 - [`docs/RUNNING.md`](./docs/RUNNING.md) — local development: prerequisites, secrets, database setup, and the route list.
 - [`docs/DEPLOY.md`](./docs/DEPLOY.md) — deploying the Worker to Cloudflare staging and production.
 - [`docs/SOURCE-CODE-BREAKDOWN.md`](./docs/SOURCE-CODE-BREAKDOWN.md) — beginner-friendly map of the codebase for readers new to SvelteKit.
-- [`docs/NON-TECH.md`](./docs/NON-TECH.md) — how non-technical collaborators can contribute, including working through AI assistants.
+- [`docs/NON-TECH.md`](./docs/tickets/NON-TECH.md) — how non-technical collaborators can contribute, including working through AI assistants.
 - [`docs/AGENT-CONTEXT.md`](./docs/AGENT-CONTEXT.md) — handoff notes for AI assistants working in this repository.
 
-Hackathon tickets (indexed in [`docs/README.md`](./docs/README.md), one file per ticket with story, acceptance criteria, and dependencies):
+Hackathon tickets (indexed in [`docs/README.md`](./docs/tickets/README.md), one file per ticket with story, acceptance criteria, and dependencies):
 
 - `docs/BE-001` … `BE-019` — backend tickets (schema, ingestion, sessions, roles, tests).
 - `docs/FE-001` … `FE-017` — frontend tickets (app shell, search, localization, admin UI).
@@ -117,15 +117,15 @@ The seed is representative development data only. Do not apply it to production.
 
 ## REST notification mapping
 
-| Notification field | Database destination |
-|---|---|
-| Product UUID from `permalink_url` | `Package.scriptoriaProductId` |
-| Project, publish, and permalink fields | `Package` |
-| Cleaned `size` | `Package.sizeBytes` |
-| `app_lang` | `Package` and `PackageName` |
-| `listing[]` | `PackageListing` |
-| `image.files[]` | `PackageImage` |
-| Request receipt | `Package.lastNotificationAt` |
+| Notification field                     | Database destination          |
+| -------------------------------------- | ----------------------------- |
+| Product UUID from `permalink_url`      | `Package.scriptoriaProductId` |
+| Project, publish, and permalink fields | `Package`                     |
+| Cleaned `size`                         | `Package.sizeBytes`           |
+| `app_lang`                             | `Package` and `PackageName`   |
+| `listing[]`                            | `PackageListing`              |
+| `image.files[]`                        | `PackageImage`                |
+| Request receipt                        | `Package.lastNotificationAt`  |
 
 The ingestion handler must validate and normalize the notification before
 writing it. In particular, the supplied example's `"11351769}"` size becomes the
@@ -147,3 +147,21 @@ is confirmed:
 One product decision remains open: whether a republished `ACTIVE` package stays
 active or returns to `PENDING`. The schema supports either policy; the ingestion
 service must not silently choose it without SIL confirmation.
+
+## TODO
+
+- [ ] Cleanup documentation
+  - [ ] This readme file needs some work as some of these steps changed through the weekend
+  - [ ] The files under docs need to be cleaned up and verified that the information is correct. An AI agent did the work of writing most of those, but we ran out of time for verification.
+- [ ] AGENTS.md considerations
+  - [ ] There is an AGENT-CONTEXT.md file that may be too verbose, but it does need to be compared to the AGENTS.md and potentially the two combined in some places
+- [ ] Connect Scriptoria API
+- [ ] Ensure that the deploy to Cloudflare is completely functional
+  - [ ] D1 Database migration
+  - [ ] Verify that workers are the path that we need to accomplish our goals
+  - [ ] Make sure served files deploy correctly to Cloudflare and are accessible (permissions)
+- [ ] Refactoring to make commands easier for our average user to execute them
+  - [ ] Ensure that forking, configuration, and deployment are fairly straight forward for our average user
+  - [ ] Some combination of commands might be helpful
+  - [ ] Consider creating test cases that a user can run to feel confident that container-app-server is installed correctly
+- [ ] Double check for potential security issues (this was a very quick project and care needs to be taken to ensure that security is addressed)

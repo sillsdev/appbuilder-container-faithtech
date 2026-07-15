@@ -155,6 +155,9 @@ service must not silently choose it without SIL confirmation.
   - [ ] The files under docs need to be cleaned up and verified that the information is correct. An AI agent did the work of writing most of those, but we ran out of time for verification.
 - [ ] AGENTS.md considerations
   - [ ] There is an AGENT-CONTEXT.md file that may be too verbose, but it does need to be compared to the AGENTS.md and potentially the two combined in some places
+- [ ] Consider the UI/UX of the current design.
+  - [ ] Does the download button concept work? Or do we want the user to click on the row and it download?
+  - [ ] Do we want to show file details?
 - [ ] Connect Scriptoria API
 - [ ] Ensure that the deploy to Cloudflare is completely functional
   - [ ] D1 Database migration
@@ -164,4 +167,4 @@ service must not silently choose it without SIL confirmation.
   - [ ] Ensure that forking, configuration, and deployment are fairly straight forward for our average user
   - [ ] Some combination of commands might be helpful
   - [ ] Consider creating test cases that a user can run to feel confident that container-app-server is installed correctly
-- [ ] Double check for potential security issues (this was a very quick project and care needs to be taken to ensure that security is addressed)
+- [ ] Double check for potential security issues (this was a very quick project and care needs to be taken to ensure that security is properly addressed)

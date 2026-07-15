@@ -15,6 +15,8 @@ In July 10-12 2026 this project was created at the Toronto FaithTech Hackathon. 
 
 ## Glocal Hackathon Tickets
 
+There is a color coded [Google Sheet](https://docs.google.com/spreadsheets/d/1wsgLPWsmu8XZz0li5xIrzCVO-D8xOAsS-mrPshyUHwo/edit?gid=1075460008#gid=1075460008) of some of these as well.
+
 This folder contains one Markdown story/ticket for every row in the `Tickets` worksheet of `Glocal_Hackathon_Implementation_Tickets.xlsx`.
 
 The team picked the name Glocal as a combination of Global (SIL) and Local (Reconciliation Through Relationships) projects represented at the hackathon.

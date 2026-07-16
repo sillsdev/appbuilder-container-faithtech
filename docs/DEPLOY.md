@@ -10,8 +10,9 @@ For local development and the route list, see [`RUNNING.md`](./RUNNING.md).
 
 ## Prerequisites
 
-- Node 22 and `npm install`
+- Node 22.19.0 and `npm install`
 - A Cloudflare account with Workers + D1, and the CLI authenticated:
+
   ```bash
   npx wrangler login
   ```
@@ -20,10 +21,10 @@ For local development and the route list, see [`RUNNING.md`](./RUNNING.md).
 
 `wrangler.jsonc` ships with placeholders that must be replaced per environment:
 
-| Field | Placeholder | Replace with |
-|---|---|---|
-| `env.staging.d1_databases[0].database_id` | `00000000-…` | the real id from `wrangler d1 create` (below) |
-| `env.staging.vars.ALLOWED_ORIGIN` | `https://replace-with-staging-web-origin.example` | the web origin — see the note below (currently inert) |
+| Field                                     | Placeholder                                       | Replace with                                          |
+| ----------------------------------------- | ------------------------------------------------- | ----------------------------------------------------- |
+| `env.staging.d1_databases[0].database_id` | `00000000-…`                                      | the real id from `wrangler d1 create` (below)         |
+| `env.staging.vars.ALLOWED_ORIGIN`         | `https://replace-with-staging-web-origin.example` | the web origin — see the note below (currently inert) |
 
 Secrets are **not** in `wrangler.jsonc` — they are set with `wrangler secret put`
 (below) and never committed.

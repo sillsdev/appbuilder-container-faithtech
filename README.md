@@ -67,6 +67,22 @@ the application must use the normalized columns and relations for business
 logic. Listing descriptions are untrusted HTML and must be sanitized before
 rendering.
 
+A more detailed rendering can be found at [docs/database.md](docs/database.md).
+
+## Current endpoints and files
+
+| Endpoint Name                       | Web Path                                  | Handler File                                            |
+| :---------------------------------- | :---------------------------------------- | :------------------------------------------------------ |
+| Root Page Load                      | `/` (GET)                                 | `src/routes/+page.server.ts`                            |
+| Login Form                          | `/login` (GET)                            | `src/routes/login/+page.server.ts`                      |
+| Login Action                        | `/login` (POST)                           | `src/routes/login/+page.server.ts`                      |
+| Health Check                        | `/health` (GET)                           | `src/routes/health/+server.ts`                          |
+| Search Packages API                 | `/api/v1/packages` (GET)                  | `src/routes/api/v1/packages/+server.ts`                 |
+| Get Package Details API             | `/api/v1/packages/:id` (GET)              | `src/routes/api/v1/packages/[id]/+server.ts`            |
+| Scriptoria Notification Ingest      | `/api/v1/notifications/scriptoria` (POST) | `src/routes/api/v1/notifications/scriptoria/+server.ts` |
+| Logout Handler                      | `/logout` (POST)                          | `src/routes/logout/+server.ts`                          |
+| Admin Page Load / Moderation Action | `/admin` (GET/POST)                       | `src/routes/admin/+page.server.ts`                      |
+
 ## Install and validate
 
 ```bash
@@ -153,8 +169,8 @@ service must not silently choose it without SIL confirmation.
 - [ ] Cleanup documentation
   - [ ] This readme file needs some work as some of these steps changed through the weekend
   - [ ] The files under docs need to be cleaned up and verified that the information is correct. An AI agent did the work of writing most of those, but we ran out of time for verification.
-- [ ] AGENTS.md considerations
-  - [ ] There is an AGENT-CONTEXT.md file that may be too verbose, but it does need to be compared to the AGENTS.md and potentially the two combined in some places
+- [x] AGENTS.md considerations
+  - [x] There is an AGENT-CONTEXT.md file that may be too verbose, but it does need to be compared to the AGENTS.md and potentially the two combined in some places
 - [ ] Consider the UI/UX of the current design.
   - [ ] Does the download button concept work? Or do we want the user to click on the row and it download?
   - [ ] Do we want to show file details?
@@ -167,4 +183,4 @@ service must not silently choose it without SIL confirmation.
   - [ ] Ensure that forking, configuration, and deployment are fairly straight forward for our average user
   - [ ] Some combination of commands might be helpful
   - [ ] Consider creating test cases that a user can run to feel confident that container-app-server is installed correctly
-- [ ] Double check for potential security issues (this was a very quick project and care needs to be taken to ensure that security is properly addressed)
+- [ ] Double check for potential security issues; use [Security Concerns](/docs/security_concerns.md) as a starting point(this was a very quick project and care needs to be taken to ensure that security is properly addressed)

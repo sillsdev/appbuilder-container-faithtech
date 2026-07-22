@@ -46,7 +46,7 @@ SvelteKit's file-system router: folders under `src/routes` are URLs; `+page.svel
 
 **Prisma/D1 specifics:**
 - Migrations are applied by **wrangler**, not `prisma migrate` (`npm run db:migrate:local|staging|production`). Prisma only generates the SQL for a migration file.
-- `vite.config.ts` has two custom plugins solely to carry Prisma's query-compiler `.wasm` through dev and build — leave them alone unless you're specifically debugging that wasm pipeline.
+- `vite.config.ts` defines one custom plugin (`prismaWasmAsset`) solely to carry Prisma's query-compiler `.wasm` into the build output — leave it (and the adjacent `rollupOptions.external` wasm exclusion) alone unless you're specifically debugging that pipeline.
 
 **Testing:** `test/worker.test.ts` runs inside `workerd` via `@cloudflare/vitest-pool-workers`, applying real D1 migrations and calling server modules/route handlers directly rather than over HTTP.
 

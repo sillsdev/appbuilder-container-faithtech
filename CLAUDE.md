@@ -8,7 +8,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 "Glocal Packages" (FaithTech/SIL hackathon project): one **SvelteKit** app deployed as a single **Cloudflare Worker**, backed by **Cloudflare D1** (SQLite) via **Prisma 7**. Three functional parts:
 
-1. Public catalogue + search of language "asset packages" (`/` and `GET /api/v1/packages[/{id}]`), consumed by an iOS container app.
+1. Public catalog + search of language "asset packages" (`/` and `GET /api/v1/packages[/{id}]`), consumed by an iOS container app.
 2. Admin console (`/admin`) where administrators approve/reject packages.
 3. Scriptoria intake webhook (`POST /api/v1/notifications/scriptoria`), Bearer-token authenticated, where the external Scriptoria publishing service announces new packages.
 
@@ -37,7 +37,7 @@ SvelteKit's file-system router: folders under `src/routes` are URLs; `+page.svel
 **Cloudflare bindings** arrive via `event.platform.env` (`DB` = D1 binding; secrets declared in `src/app.d.ts`). `src/lib/server/platform.ts`'s `requireEnv()` fetches these or throws a 503.
 
 **Data layer** (`src/lib/server/`):
-- `packages.ts` — catalogue queries and the `moderatePackage` state machine: `PENDING→ACTIVE|REJECTED`, `ACTIVE→INACTIVE`, `REJECTED→PENDING`, `INACTIVE→ACTIVE|PENDING`. Rejecting requires a reason.
+- `packages.ts` — catalog queries and the `moderatePackage` state machine: `PENDING→ACTIVE|REJECTED`, `ACTIVE→INACTIVE`, `REJECTED→PENDING`, `INACTIVE→ACTIVE|PENDING`. Rejecting requires a reason.
 - `notification.ts` — Scriptoria payload schema (valibot) + `ingestNotification()`: extracts the product UUID from `permalink_url` as the idempotency key, upserts the package (new → `PENDING`; repeat → moderation status untouched), replaces its names/listings/images.
 - `auth.ts` — security-sensitive: PBKDF2 password hashing, timing-safe comparisons, a decoy hash to prevent user-enumeration timing attacks, HMAC-signed stateless session cookies (8h TTL), Scriptoria Bearer-secret verification. Don't "simplify" this file.
 - Both `ingestNotification` and `moderatePackage` use raw D1 `batch()` (not Prisma) for atomicity — **the Prisma D1 adapter does not guarantee transactions**, so any new multi-statement write needs the same pattern. All reads go through Prisma.
@@ -54,7 +54,7 @@ SvelteKit's file-system router: folders under `src/routes` are URLs; `+page.svel
 
 ## Project docs
 
-`docs/` contains guides (`RUNNING.md`, `DEPLOY.md`, `SOURCE-CODE-BREAKDOWN.md`, `AGENT-CONTEXT.md`, `NON-TECH.md`) plus 52 hackathon tickets (`BE-001..019`, `FE-001..017`, `OPS-001..016`, indexed in `docs/README.md`) with YAML frontmatter (id, owner, priority, estimate, dependencies, status). When asked what to do next, start from P0 tickets and their dependency chains rather than inventing scope.
+`docs/` contains guides (`RUNNING.md`, `DEPLOY.md`, `SOURCE-CODE-BREAKDOWN.md`, `NON-TECH.md`) plus 52 hackathon tickets (`BE-001..019`, `FE-001..017`, `OPS-001..016`, indexed in `docs/README.md`) with YAML frontmatter (id, owner, priority, estimate, dependencies, status). When asked what to do next, start from P0 tickets and their dependency chains rather than inventing scope.
 
 ## Working conventions
 

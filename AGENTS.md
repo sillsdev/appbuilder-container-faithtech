@@ -4,6 +4,10 @@ SvelteKit fullstack app: TypeScript frontend (Svelte 5, Tailwind CSS, DaisyUI) +
 
 > This file is the shared tech-stack/commands/directory reference for all coding agents. Claude Code additionally reads `CLAUDE.md` (which imports this file) for safety rules, off-limits files, and repo-specific gotchas not covered here.
 
+## Audience
+
+This project is built to be forked — other teams adopt their own copy for their own package catalogs. The FaithTech/SIL core team chose this stack deliberately and knows it well, so don't over-explain it to them. But if you're an agent working in a fork rather than this original repo, don't assume that same familiarity: explain Svelte/SvelteKit/Prisma/D1 concepts in plain language and define jargon on first use, since a fork's maintainers may be new to this stack.
+
 ## Tech Stack
 
 | Layer      | Tech         | Version |
@@ -72,8 +76,8 @@ src/
 │   └── validation.ts         # Valibot schemas
 └── routes/
     ├── +layout.svelte        # Root layout (nav, footer)
-    ├── +page.svelte          # Public package catalogue
-    ├── +page.server.ts       # Load packages for catalogue
+    ├── +page.svelte          # Public package catalog
+    ├── +page.server.ts       # Load packages for catalog
     ├── health/+server.ts     # Health check endpoint
     ├── login/
     │   ├── +page.svelte      # Admin login form
@@ -107,7 +111,6 @@ docs/
 ├── DEPLOY.md                 # Staging/production deployment
 ├── SOURCE-CODE-BREAKDOWN.md  # Beginner-friendly codebase map
 ├── NON-TECH.md               # Non-technical contributor guide
-├── AGENT-CONTEXT.md          # AI assistant handoff notes
 └── BE-*/FE-*/OPS-*           # Hackathon tickets (one file per ticket)
 ```
 
@@ -172,13 +175,13 @@ docs/
 
 1. `npm run check` (typecheck + test)
 2. `npm run deploy:staging`
-3. Verify at <https://glocal-packages-api-staging.workers.dev>
+3. Verify at `https://glocal-packages-api-staging.<your-subdomain>.workers.dev` — Cloudflare inserts your account's `workers.dev` subdomain, so there's no fixed URL to hardcode; `wrangler deploy` prints the actual URL on success (see `docs/DEPLOY.md`)
 4. If schema changed: `npm run db:migrate:staging` (apply migrations to remote D1)
 
 ## Key Decision Points
 
 - **Database**: D1 (serverless SQLite); Prisma handles schema + migrations
 - **Admin auth**: App-managed (email + password hash); no OAuth/SSO
-- **Public access**: Unauthenticated (package catalogue, API); admin login required for review
+- **Public access**: Unauthenticated (package catalog, API); admin login required for review
 - **Scriptoria intake**: Authenticated via Bearer token in Authorization header, compared against the `SCRIPTORIA_API_KEY` Worker secret. (`PUBLISH_NOTIFY` is a different thing — the name this server is registered under in Scriptoria's own outbound notify list, not a secret.)
 - **Package status**: Ingestion enforces `PENDING` status; admins approve to `ACTIVE` via dashboard

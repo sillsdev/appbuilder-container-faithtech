@@ -2,6 +2,8 @@
 
 SvelteKit fullstack app: TypeScript frontend (Svelte 5, Tailwind CSS, DaisyUI) + backend (Prisma/SQLite via D1), deployed as Cloudflare Worker.
 
+> This file is the shared tech-stack/commands/directory reference for all coding agents. Claude Code additionally reads `CLAUDE.md` (which imports this file) for safety rules, off-limits files, and repo-specific gotchas not covered here.
+
 ## Tech Stack
 
 | Layer      | Tech         | Version |

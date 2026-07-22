@@ -120,7 +120,7 @@ docs/
 
 ### Async & Promises
 
-- **Request-scoped clients**: Prisma client is created per-request via `withPrisma()` helper; always disconnect in finally block
+- **Request-scoped clients**: Prisma client is created per-request via `createPrisma()`; almost all routes call it directly and disconnect in a manual `try/finally` (see `admin/+page.server.ts`). A `withPrisma()` wrapper also exists but is currently only used in `hooks.server.ts`
 - **Timing-safe comparisons**: Use `crypto.subtle.timingSafeEqual()` for auth (prevents enumeration timing attacks)
 - **No global singletons**: Each handler receives fresh bindings (D1 database, secrets)
 
@@ -140,11 +140,12 @@ docs/
 
 - **Svelte 5 syntax**: Use `let count = $state(0)` for reactivity; `let component = $derived(computeValue())`
 - **Tailwind + DaisyUI**: Classes in component `<style>` blocks or inline; DaisyUI provides unstyled semantic HTML templates
-- **Forms**: `<form method="POST">` triggers SvelteKit actions; use `sveltekit-superforms` + Valibot for client/server validation
+- **Forms**: `<form method="POST">` triggers SvelteKit actions. `login/` uses `sveltekit-superforms` + Valibot for client/server validation; other actions (e.g. admin moderation) validate directly with `v.parse()` against schemas in `validation.ts` — check the route before assuming superforms
 
 ### Deployment & Config
 
-- **Wrangler environments**: `dev`, `staging`, `production` configs in `wrangler.jsonc`; each has own D1 binding
+- **Wrangler environments**: local dev uses `wrangler.jsonc`'s top-level defaults; `staging` and `production` are explicit named envs in the same file, each with its own D1 binding
+- **Secrets**: `SESSION_SECRET` and `SCRIPTORIA_API_KEY` are never in `wrangler.jsonc` — locally they come from `.dev.vars` (copy from `.dev.vars.example`), remotely via `wrangler secret put`
 - **Build artifact**: `.svelte-kit/cloudflare/` is the Worker entry; Vite plugin copies Prisma WASM to output
 - **Observability**: Source maps uploaded to Cloudflare; traces sampled at 5%, logs at 100%
 
@@ -154,7 +155,7 @@ docs/
 
 1. Add route: `src/routes/feature/+page.server.ts` (load), `+page.svelte` (UI)
 2. Verify admin session in layout: `src/routes/admin/+layout.server.ts`
-3. Query database: `withPrisma(event.platform!.env.DB, (prisma) => prisma.model.findMany())`
+3. Query database: `const prisma = createPrisma(event.platform!.env.DB); try { ... } finally { await prisma.$disconnect().catch(() => {}); }`
 4. POST handler in `+page.server.ts`: validate input with Valibot, mutate database, set flash message
 
 ### Update database schema

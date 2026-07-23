@@ -17,7 +17,6 @@ All project documentation lives in [`docs/`](./docs).
 - [`docs/DEPLOY.md`](./docs/DEPLOY.md) — deploying the Worker to Cloudflare staging and production.
 - [`docs/SOURCE-CODE-BREAKDOWN.md`](./docs/SOURCE-CODE-BREAKDOWN.md) — beginner-friendly map of the codebase for readers new to SvelteKit.
 - [`docs/NON-TECH.md`](./docs/NON-TECH.md) — how non-technical collaborators can contribute, including working through AI assistants.
-- [`docs/AGENT-CONTEXT.md`](./docs/AGENT-CONTEXT.md) — handoff notes for AI assistants working in this repository.
 
 Hackathon tickets (indexed in [`docs/README.md`](./docs/README.md), one file per ticket with story, acceptance criteria, and dependencies):
 
